@@ -434,13 +434,16 @@ def compute_build_levels(config: dict, target: str) -> dict[str, int]:
 
 
 def group_by_level(levels: dict[str, int]) -> list[list[str]]:
-    # TODO: レベルごとにターゲットをグループ化してください
-    # ヒント:
-    # 入力: {"a": 0, "b": 0, "c": 1, "d": 2}
-    # 出力: [["a", "b"], ["c"], ["d"]]
     if not levels:
         return []
-    pass
+
+    max_level = max(levels.values())
+    groups = [[] for _ in range(max_level + 1)]
+
+    for target, level in levels.items():
+        groups[level].append(target)
+
+    return groups
 
 
 def safe_print(message: str):
