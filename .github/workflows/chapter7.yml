@@ -1,0 +1,26 @@
+name: Chapter 7 - Lockfiles
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test get_tool_version
+        run: python tests/test_get_tool_version.py
+
+      - name: Test check_version_constraint
+        run: python tests/test_check_version_constraint.py
+
+      - name: Test lockfile
+        working-directory: project
+        run: bash ../tests/test_lockfile.sh

@@ -1,13 +1,112 @@
+import hashlib
 import json
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 
 def load_build_file(path: str) -> dict:
     with open(path) as f:
         return json.load(f)
+
+
+def get_tool_version(tool: str) -> str | None:
+    # TODO: ツールのバージョンを取得してください
+    # ヒント:
+    # - gcc: `gcc --version` の出力から抽出
+    # - python: `python3 --version` の出力から抽出
+    # - 正規表現 r'(\d+\.\d+\.\d+)' でバージョン番号を抽出できます
+    pass
+
+
+def get_tool_path(tool: str) -> str | None:
+    result = subprocess.run(["which", tool], capture_output=True, text=True)
+    if result.returncode == 0:
+        return result.stdout.strip()
+    return None
+
+
+def parse_version(v: str) -> tuple:
+    return tuple(map(int, v.split(".")))
+
+
+def check_version_constraint(actual: str, constraint: str) -> bool:
+    # TODO: バージョン制約を満たしているかチェックしてください
+    # ヒント:
+    # - ">=X.Y.Z": actual が X.Y.Z 以上
+    # - "==X.Y.Z": actual が X.Y.Z と一致
+    # - parse_version() でタプルに変換すると比較しやすくなります
+    pass
+
+
+def compute_file_hash(path: str) -> str:
+    sha256 = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            sha256.update(chunk)
+    return f"sha256:{sha256.hexdigest()}"
+
+
+def generate_lockfile(config: dict) -> dict:
+    tools_config = config.get("tools", {})
+    locked_tools = {}
+
+    for tool, spec in tools_config.items():
+        version = get_tool_version(tool)
+        path = get_tool_path(tool)
+
+        if version is None:
+            raise ValueError(f"Tool not found: {tool}")
+
+        constraint = spec.get("version", "")
+        if constraint and not check_version_constraint(version, constraint):
+            raise ValueError(
+                f"Tool {tool} version {version} does not satisfy {constraint}"
+            )
+
+        locked_tools[tool] = {
+            "version": version,
+            "path": path,
+            "hash": compute_file_hash(path) if path else None,
+        }
+
+    return {
+        "tools": locked_tools,
+        "generated_at": datetime.now().isoformat(),
+    }
+
+
+def save_lockfile(lockfile: dict, path: str = "build.lock"):
+    with open(path, "w") as f:
+        json.dump(lockfile, f, indent=2)
+
+
+def verify_lockfile(lockfile: dict) -> list[str]:
+    errors = []
+    locked_tools = lockfile.get("tools", {})
+
+    for tool, locked in locked_tools.items():
+        current_version = get_tool_version(tool)
+        current_path = get_tool_path(tool)
+
+        if current_version is None:
+            errors.append(f"{tool}: not installed")
+            continue
+
+        if current_version != locked["version"]:
+            errors.append(
+                f"{tool}: version mismatch "
+                f"(locked: {locked['version']}, current: {current_version})"
+            )
+
+        if current_path and locked.get("hash"):
+            current_hash = compute_file_hash(current_path)
+            if current_hash != locked["hash"]:
+                errors.append(f"{tool}: binary hash mismatch")
+
+    return errors
 
 
 def parse_includes(file_path: str) -> list[str]:
@@ -162,8 +261,38 @@ def build_with_deps(config: dict, target: str) -> bool:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: minimake <target>... [--file build_file]", file=sys.stderr)
+        print("Usage: minimake <command> [args...]", file=sys.stderr)
+        print("Commands: <target>, lock, verify", file=sys.stderr)
         sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == "lock":
+        build_file = "build.json"
+        if len(sys.argv) > 2 and sys.argv[2] == "--file":
+            build_file = sys.argv[3]
+        config = load_build_file(build_file)
+        lockfile = generate_lockfile(config)
+        save_lockfile(lockfile)
+        print("Generated build.lock")
+        return
+
+    if command == "verify":
+        if not Path("build.lock").exists():
+            print("Error: build.lock not found", file=sys.stderr)
+            sys.exit(1)
+
+        with open("build.lock") as f:
+            lockfile = json.load(f)
+
+        errors = verify_lockfile(lockfile)
+        if errors:
+            print("Verification failed:", file=sys.stderr)
+            for error in errors:
+                print(f"  - {error}", file=sys.stderr)
+            sys.exit(1)
+        print("Verification passed")
+        return
 
     targets = []
     build_file = "build.json"
