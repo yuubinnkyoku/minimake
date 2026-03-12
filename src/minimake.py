@@ -1,11 +1,31 @@
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 
 def load_build_file(path: str) -> dict:
     with open(path) as f:
         return json.load(f)
+
+
+def needs_rebuild(config: dict, target: str) -> bool:
+    targets = config.get("targets", {})
+    target_config = targets[target]
+
+    target_path = Path(target)
+
+    if not target_path.exists():
+        return True
+
+    target_mtime = target_path.stat().st_mtime
+
+    # TODO: inputs と deps の両方をチェックしてください
+    # ヒント:
+    # - inputs: target_config.get("inputs", [])
+    # - deps: target_config.get("deps", [])
+    # - ファイルの mtime が target_mtime より大きければ再ビルドが必要
+    pass
 
 
 def build_target(config: dict, target: str) -> bool:
@@ -17,6 +37,10 @@ def build_target(config: dict, target: str) -> bool:
 
     target_config = targets[target]
     command = target_config.get("command")
+
+    if not needs_rebuild(config, target):
+        print(f"Skipping {target} (up to date)")
+        return True
 
     if not command:
         print(f"Error: No command for target '{target}'", file=sys.stderr)

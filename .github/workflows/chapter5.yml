@@ -1,0 +1,28 @@
+name: Chapter 5 - Incremental Build
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test needs_rebuild
+        working-directory: project
+        run: python ../tests/test_needs_rebuild.py
+
+      - name: Test incremental build skips up-to-date
+        working-directory: project
+        run: bash ../tests/test_incremental_skip.sh
+
+      - name: Test incremental build rebuilds on change
+        working-directory: project
+        run: bash ../tests/test_incremental_rebuild.sh

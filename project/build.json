@@ -2,10 +2,12 @@
   "targets": {
     "hello.o": {
       "deps": [],
+      "inputs": ["hello.c"],
       "command": "gcc -c -o hello.o hello.c"
     },
     "hello": {
       "deps": ["hello.o"],
+      "inputs": ["hello.o"],
       "command": "gcc -o hello hello.o"
     }
   }
