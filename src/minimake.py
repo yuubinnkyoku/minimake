@@ -130,16 +130,25 @@ def verify_lockfile(lockfile: dict) -> list[str]:
 
 
 def compute_cache_key(config: dict, target: str, dep_keys: dict[str, str]) -> str:
-    # TODO: ターゲットのキャッシュキーを計算してください
-    # ヒント:
-    # 1. ビルドコマンドをハッシュに含める
-    # 2. 各入力ファイルの内容（ファイル名とハッシュ）をハッシュに含める
-    # 3. 依存ターゲットのキャッシュキーをハッシュに含める
-    # hasher.update(string.encode()) でハッシュに追加できます
     targets = config.get("targets", {})
     target_config = targets[target]
     hasher = hashlib.sha256()
-    pass
+
+    command = target_config.get("command", "")
+    hasher.update(command.encode())
+
+    inputs = target_config.get("inputs", [])
+    for input_file in sorted(inputs):
+        if Path(input_file).exists():
+            file_hash = compute_file_hash(input_file)
+            hasher.update(f"{input_file}:{file_hash}".encode())
+
+    deps = target_config.get("deps", [])
+    for dep in sorted(deps):
+        if dep in dep_keys:
+            hasher.update(f"dep:{dep}:{dep_keys[dep]}".encode())
+
+    return hasher.hexdigest()
 
 
 def get_cache_path(cache_key: str) -> Path:
