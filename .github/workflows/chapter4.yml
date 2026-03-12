@@ -1,0 +1,28 @@
+name: Chapter 4 - Dependency Resolution
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test resolve_build_order
+        working-directory: project
+        run: python ../tests/test_resolve_build_order.py
+
+      - name: Test circular dependency detection
+        working-directory: project
+        run: python ../tests/test_circular_dependency.py
+
+      - name: Test CLI with auto dependency resolution
+        working-directory: project
+        run: bash ../tests/test_cli_auto_deps.sh
