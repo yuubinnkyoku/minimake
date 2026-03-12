@@ -1,0 +1,40 @@
+name: Chapter 3 - Simple Build
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test load_build_file
+        working-directory: project
+        run: python ../tests/test_load_build_file.py
+
+      - name: Test build_target
+        working-directory: project
+        run: python ../tests/test_build_target.py
+
+      - name: Test unknown target error
+        working-directory: project
+        run: python ../tests/test_unknown_target.py
+
+      - name: Test CLI with single target
+        working-directory: project
+        run: bash ../tests/test_cli_single.sh
+
+      - name: Test CLI with multiple targets
+        working-directory: project
+        run: bash ../tests/test_cli_multiple.sh
+
+      - name: Test CLI with --file option
+        working-directory: project
+        run: bash ../tests/test_cli_file_option.sh
