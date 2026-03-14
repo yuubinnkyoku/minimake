@@ -20,7 +20,7 @@ def load_build_file(path: str) -> dict:
     Returns:
         パースされた辞書
     """
-    # TODO: ここを実装してください
+    # ここを実装してください
     # ヒント: json.load() を使います
     with open(path) as f:
         return json.load(f)
@@ -57,7 +57,7 @@ def build_target(config: dict, target: str) -> bool:
     print(f"Building {target}...")
     print(f"  $ {command}")
 
-    # TODO: ここでコマンドを実行してください
+    # ここでコマンドを実行してください
     # ヒント: subprocess.run() を使います
     # shell=True を指定すると、シェルコマンドとして実行できます
     # result.returncode が 0 でなければビルド失敗です
@@ -76,7 +76,7 @@ def main():
         print("Usage: minimake <target>... [--file build_file]", file=sys.stderr)
         sys.exit(1)
 
-    # TODO: 引数をパースして、複数のターゲットを順番にビルドできるようにしてください
+    # 引数をパースして、複数のターゲットを順番にビルドできるようにしてください
     # --file オプションでビルド定義ファイルを指定できるようにしてください
     #
     # ヒント:
