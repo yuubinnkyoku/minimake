@@ -1,3 +1,4 @@
+from ast import pattern
 import hashlib
 import json
 import re
@@ -18,6 +19,15 @@ def get_tool_version(tool: str) -> str | None:
     # - gcc: `gcc --version` の出力から抽出
     # - python: `python3 --version` の出力から抽出
     # - 正規表現 r'(\d+\.\d+\.\d+)' でバージョン番号を抽出できます
+
+    pattern="r'(\d+\.\d+\.\d+)"
+
+    gcc=subprocess.run("gcc --version",shell=True)
+    py=subprocess.run("python3 --version",shell=True)
+
+    gcc_v=re.match(pattern,gcc)
+
+
     pass
 
 
