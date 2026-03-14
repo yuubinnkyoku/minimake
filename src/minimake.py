@@ -6,6 +6,8 @@ TODO コメントがある箇所を実装してください。
 """
 
 import sys
+import json
+import subprocess
 
 
 def load_build_file(path: str) -> dict:
@@ -20,7 +22,10 @@ def load_build_file(path: str) -> dict:
     """
     # TODO: ここを実装してください
     # ヒント: json.load() を使います
-    pass
+    with open(path) as f:
+        return json.load(f)
+
+    
 
 
 def build_target(config: dict, target: str) -> bool:
@@ -56,7 +61,14 @@ def build_target(config: dict, target: str) -> bool:
     # ヒント: subprocess.run() を使います
     # shell=True を指定すると、シェルコマンドとして実行できます
     # result.returncode が 0 でなければビルド失敗です
-    pass
+
+    result=subprocess.run(command,shell=True)
+
+    if not result.returncode:
+        print(f"Error: No command for target '{target}'", file=sys.stderr)
+        return False
+
+    return True
 
 
 def main():
@@ -70,7 +82,22 @@ def main():
     # ヒント:
     # - targets: ビルドするターゲットのリスト
     # - build_file: ビルド定義ファイルのパス（デフォルト: "build.json"）
-    pass
+    
+    if sys.argv[1]=="--file":
+        build_file=sys.argv[2]
+    else:
+        build_file="build.json"
+    
+    config=load_build_file(build_file)
+    result=build_target(config,build_file)
+
+    if result:
+        print("success!")
+    else:
+        print(f"Error: No command for target '{build_file}'", file=sys.stderr)
+
+
+
 
 
 if __name__ == "__main__":
