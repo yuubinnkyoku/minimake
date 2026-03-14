@@ -13,9 +13,13 @@ def load_build_file(path: str) -> dict:
 def parse_includes(file_path: str) -> list[str]:
     content = Path(file_path).read_text()
 
-    # TODO: #include "..." の形式を抽出してください
+    # DONE: #include "..." の形式を抽出してください
     # ヒント: re.findall(r'#include\s+"([^"]+)"', content)
-    pass
+
+
+    result=re.findall(r'#include\s+"([^"]+)"', content)
+
+    return result
 
 
 def collect_all_includes(file_path: str, base_dir: str = ".") -> set[str]:
@@ -23,12 +27,18 @@ def collect_all_includes(file_path: str, base_dir: str = ".") -> set[str]:
     visited = set()
 
     def visit(path: str):
-        # TODO: 再帰的に #include を収集してください
+        # DONE: 再帰的に #include を収集してください
         # ヒント:
         # 1. 訪問済みならスキップ
         # 2. parse_includes でインクルードを取得
         # 3. 各インクルードに対して再帰的に visit を呼ぶ
-        pass
+        if path in visited:
+            return
+        includes=parse_includes(path)
+        for i in includes:
+            visit(i)
+        
+
 
     visit(file_path)
     return collected
