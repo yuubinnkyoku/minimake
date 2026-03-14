@@ -33,10 +33,12 @@ def collect_all_includes(file_path: str, base_dir: str = ".") -> set[str]:
         # 2. parse_includes でインクルードを取得
         # 3. 各インクルードに対して再帰的に visit を呼ぶ
         if path in visited:
-            return
-        includes=parse_includes(path)
-        for i in includes:
-            visit(i)
+            pass
+        else:
+            includes=parse_includes(path)
+            for i in includes:
+                collected.add(i)
+                visit(i)
         
 
 
