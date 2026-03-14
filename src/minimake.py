@@ -1,3 +1,4 @@
+from encodings.punycode import T
 import json
 import subprocess
 import sys
@@ -25,7 +26,21 @@ def needs_rebuild(config: dict, target: str) -> bool:
     # - inputs: target_config.get("inputs", [])
     # - deps: target_config.get("deps", [])
     # - ファイルの mtime が target_mtime より大きければ再ビルドが必要
-    pass
+
+    inputs=target_config.get("inputs", [])
+
+    for i in inputs:
+        ip=Path(i)
+        if not ip.exists():
+            continue
+
+        input_mtime=ip.stat().st_mtime
+        if input_mtime > target_mtime:
+            return True
+    
+    return False
+        
+
 
 
 def build_target(config: dict, target: str) -> bool:
