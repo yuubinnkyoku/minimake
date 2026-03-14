@@ -64,7 +64,7 @@ def build_target(config: dict, target: str) -> bool:
 
     result=subprocess.run(command,shell=True)
 
-    if not result.returncode:
+    if not result.returncode==0:
         print(f"Error: No command for target '{target}'", file=sys.stderr)
         return False
 
